@@ -71,3 +71,4 @@ COPY related FROM '/Users/pattylong/Desktop/hackreactor/sdc/productOverview/sour
 
 CREATE INDEX product_id ON features(product_id);
 CREATE INDEX style_id ON photos(style_id);
+CREATE INDEX current_product_id ON related(current_product_id);

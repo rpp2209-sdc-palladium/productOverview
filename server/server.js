@@ -25,24 +25,24 @@ const db = new Client({
   port: process.env.PGPORT
 });
 
+db.connect((err) => {
+  if (err) {
+    console.error('connection error', err.stack)
+  } else {
+    console.log('connected')
+  }
+});
+
 // GET PRODUCTS // ============================================================================
 app.get('/products', (req, res) => {
-  db.connect()
-    .then(() => {
-      console.log('connected to db')
-      db.query('SELECT * FROM products LIMIT 10', (err, result) => {
-        if (err) {
-          console.log('error: ', err);
-        } else {
-          console.log(result);
-          db.end();
-          res.send(result.rows);
-        }
-      })
-    })
-    .catch((err) => {
-      console.log('connection error', err)
-    });
+  db.query('SELECT * FROM products LIMIT 10', (err, result) => {
+    if (err) {
+      console.log('error: ', err);
+    } else {
+      console.log(result);
+      res.send(result.rows);
+    }
+  });
 });
 
 
@@ -73,21 +73,13 @@ app.get('/products/:product_id', (req, res) => {
       LEFT JOIN x_feature b ON 1=1
     GROUP BY 1,2,3,4,5,6
   `
-  db.connect()
-  .then(() => {
-    console.log('connected to db')
-    db.query(queryString, (err, result) => {
-      if (err) {
-        console.log('error: ', err);
-      } else {
-        console.log(result);
-        db.end();
-        res.send(result.rows);
-      }
-    })
-  })
-  .catch((err) => {
-    console.log('connection error', err)
+  db.query(queryString, (err, result) => {
+    if (err) {
+      console.log('error: ', err);
+    } else {
+      console.log(result);
+      res.send(result.rows);
+    }
   });
 });
 
@@ -135,22 +127,14 @@ app.get('/products/:product_id/styles', (req, res) => {
     LEFT JOIN x_photos c ON a.id = c.style_id
     GROUP BY 1
     `
-  db.connect()
-  .then(() => {
-    console.log('connected to db')
-    db.query(queryString, (err, result) => {
-      if (err) {
-        console.log('error ', err);
-        res.status(500).send();
-      } else {
-        console.log(result);
-        db.end();
-        res.send(result.rows);
-      }
-    })
-  })
-  .catch((err) => {
-    console.log('connection error', err)
+  db.query(queryString, (err, result) => {
+    if (err) {
+      console.log('error ', err);
+      res.status(500).send();
+    } else {
+      console.log(result);
+      res.send(result.rows);
+    }
   });
 });
 
@@ -158,7 +142,21 @@ app.get('/products/:product_id/styles', (req, res) => {
 // GET PRODUCT ID RELATED // ============================================================================
 app.get('/products/:product_id/related', (req, res) => {
   console.log('GET product related', req.params.product_id)
-  res.send('Hello World!');
+  var queryString = `
+    SELECT ARRAY_AGG(related_product_id) AS related_ids
+    FROM related
+    WHERE current_product_id = ${req.params.product_id}
+  `
+
+  db.query(queryString, (err, result) => {
+    if (err) {
+      console.log('error ', err);
+      res.status(500).send();
+    } else {
+      console.log(result);
+      res.send(result.rows[0].related_ids);
+    }
+  });
 });
 
 
