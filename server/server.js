@@ -15,7 +15,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-app.listen(3000);
+app.listen(3001);
 
 const db = new Client({
   user: process.env.PGUSER,
@@ -35,7 +35,10 @@ db.connect((err) => {
 
 // GET PRODUCTS // ============================================================================
 app.get('/products', (req, res) => {
-  db.query('SELECT * FROM products LIMIT 10', (err, result) => {
+  var page = req.query.page || 1;
+  var count = req.query.count || 5;
+
+  db.query(`SELECT * FROM products LIMIT ${count}`, (err, result) => {
     if (err) {
       console.log('error: ', err);
     } else {
